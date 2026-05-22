@@ -14,4 +14,4 @@ jobs:
 
     steps:
     - name: Clone this repo local ubuntu machine
-      uses: actions/checkout@4
+      uses: actions/checkout@v4
