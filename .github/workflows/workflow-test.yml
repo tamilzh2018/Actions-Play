@@ -1,21 +1,96 @@
 name: workplay-play-ground
 
 on:
-  push:
-    branches: ['master']
-      
-
+     
+  schedule:
+    - cron: '10 0 * * 6' # every saturday at 12.10 AM UTC zone
+    - cron: '30 5 5 7 *' #runs at 5.30, on friday 7th month
   pull_request:
     branches: ['master']
-
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name'
+        type: string
+        required: false
+        default: 'Raj'
+      age:
+        description: 'Age'
+        type: number
+        required: true
+        default: 40
+      gender:
+        description: 'Gender'
+        type: choice
+        options:
+          - Male
+          - Female
+          - Others
+      married:
+        description: 'Marriage Details'
+        type: boolean
+env:
+  WORLFLOW_LEVEL: "EnvValues"
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      JOB_LEVEL: "JobValues"
 
     steps:
     - name: Clone this repo local ubuntu machine
       uses: actions/checkout@v4
-    - run: |
-        ls
-        pwd
+    - name: Access the inputs values and shell commands
+      run: echo '${{ inputs.name }}'
+      
+    - name: Access the Mulitple input values
+      env:
+        STEP_LEVEL: "StepValues"
+      run: | 
+        echo '${{ inputs.age }}'
+        echo '${{ inputs.gender }}'
+        echo '${{ inputs.married }}'
+        echo "Work-Flow level Environmant Value ${{env.WORLFLOW_LEVEL}}"
+        echo "Job Level Environment Vlaues ${{env.JOB_LEVEL}}"
+        echo "Step Level Environment Vlaues ${{env.STEP_LEVEL}}"
+
+    - name: Node js Project Build Step
+      uses: ./github/actions/SetupBuildEnv
+      with:
+        nodeVersion: 18.20.4
+
+    - name: Install Dependencies
+      run: npm install
+    
+    - name: Build Node Package
+      run: npm run build
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-micorservice
+        path: dist
+  test:
+    runs-on: ubuntu-latest
+    if: ${{ always()}} 
+    needs: build
+    steps:
+      - name: NodeJs Test and Set Environment variables Programmatically
+        run: |
+          npm test
+          echo "KEY=Value" >> $GITHUB_ENV
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: 
+      - build
+      - test
+    steps:
+      - name: NodeJs Deploy,Access Environment variables Programmatically and Built-in Variables
+        run: |
+          npm deploy
+          echo "$KEY from test"
+          echo "GITHUB_RUN_NUMBER - ${{ github.run_number }}"
+          
+          
 

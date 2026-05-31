@@ -1,0 +1,13 @@
+name: composite-actions
+
+runs:
+    using: "composite"
+
+    steps:
+        - name: Setup NodeJs
+          shell: bash
+          run: echo "test action"
+
+   
+
+

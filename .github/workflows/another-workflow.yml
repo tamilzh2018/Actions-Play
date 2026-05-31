@@ -1,0 +1,24 @@
+name: another-workflow
+
+on:
+    workflow_dispatch:
+concurrency: #same workflow triggered simutaneously whether to wait to complete previous one or cancel then current one
+    group: ci-${{ github.workflow }}
+    cancel-in-progress: false
+jobs:
+    download-artifact:
+        runs-on: ubuntu-latest
+        
+        steps:
+          - name: Downlaod Artifact from another workflow
+            uses: action/download-artifact@v4
+            with:
+                name: frontend-micorservice
+                path: artifact
+                github_token: ${{ github.token }}
+                repository: ${{ github.repository }}
+                run-id: unique-number-upstream-work-flow
+          - name: Display Structure of Downloaded Files
+            run: ls -R artifact
+
+
